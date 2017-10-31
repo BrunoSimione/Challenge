@@ -1,6 +1,8 @@
 package com.example.beltrame.mytabs;
 
 import android.content.Context;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,7 +35,7 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.ViewHolder
                 public void onClick(View v) {
                     //Log.d(TAG, "Element " + getAdapterPosition() + " clicked.");
                     int pos = getAdapterPosition();
-                    Toast.makeText(v.getContext(), mDataSet[pos] , Toast.LENGTH_SHORT).show();
+                   // Toast.makeText(v.getContext(), mDataSet[pos] , Toast.LENGTH_SHORT).show();
                 }
             });
             textView = (TextView) v.findViewById(R.id.textView);
@@ -78,7 +80,6 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.ViewHolder
     public int getItemCount() {
         return mDataSet.length;
     }
-
 
 
 }

@@ -1,158 +1,145 @@
 package com.example.beltrame.mytabs;
 
-import android.content.Context;
 import android.os.Bundle;
-import android.app.Fragment;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.os.Bundle;
-import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.RadioButton;
 import android.widget.Toast;
+import android.app.Fragment;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SchoolFragment extends Fragment {
+    //private List<Movie> movieList = new ArrayList<>();
+    private List<School> schoolList = new ArrayList<>();
+    private RecyclerView recyclerView;
+    //private MoviesAdapter mAdapter;
+    private SchoolAdapter mAdapter;
 
     private static final String TAG = "RecyclerViewFragment";
     private static final String KEY_LAYOUT_MANAGER = "layoutManager";
-    private static final int SPAN_COUNT = 2;
-    private enum LayoutManagerType {
-        GRID_LAYOUT_MANAGER,
-        LINEAR_LAYOUT_MANAGER
-    }
-
-    protected LayoutManagerType mCurrentLayoutManagerType;
-
-    protected RadioButton mLinearLayoutRadioButton;
-    protected RadioButton mGridLayoutRadioButton;
-    protected ImageView mImageView;
-
-    protected RecyclerView mRecyclerView;
-    protected CustomAdapter mAdapter;
-    protected RecyclerView.LayoutManager mLayoutManager;
-    protected String[] mDataset;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        /*
+        setContentView(R.layout.activity_main2);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-        // Initialize dataset, this data would usually come from a local content provider or
-        // remote server.
-        initDataset();
+*/
+        prepareSchoolData();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        final View rootView = inflater.inflate(R.layout.recycler_view_frag, container, false);
+        final View rootView = inflater.inflate(R.layout.content_school, container, false);
 
         rootView.setTag(TAG);
 
-        mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerView);
+        recyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_view);
+        //mAdapter = new MoviesAdapter(movieList);
+        mAdapter = new SchoolAdapter(schoolList);
 
-        // LinearLayoutManager is used here, this will layout the elements in a similar fashion
-        // to the way ListView would layout elements. The RecyclerView.LayoutManager defines how
-        // elements are laid out.
-        mLayoutManager = new LinearLayoutManager(getActivity());
+        recyclerView.setHasFixedSize(true);
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
+        recyclerView.setLayoutManager(mLayoutManager);
+        recyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), LinearLayoutManager.VERTICAL));
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.setAdapter(mAdapter);
 
-        mCurrentLayoutManagerType = LayoutManagerType.LINEAR_LAYOUT_MANAGER;
-
-        if (savedInstanceState != null) {
-            // Restore saved layout manager type.
-            mCurrentLayoutManagerType = (LayoutManagerType) savedInstanceState
-                    .getSerializable(KEY_LAYOUT_MANAGER);
-        }
-        setRecyclerViewLayoutManager(mCurrentLayoutManagerType);
-
-        mAdapter = new CustomAdapter(mDataset);
-        // Set CustomAdapter as the adapter for RecyclerView.
-        mRecyclerView.setAdapter(mAdapter);
-
-        mLinearLayoutRadioButton = (RadioButton) rootView.findViewById(R.id.linear_layout_rb);
-        mLinearLayoutRadioButton.setOnClickListener(new View.OnClickListener() {
+        recyclerView.addOnItemTouchListener(new RecyclerTouchListener(getActivity(), recyclerView, new RecyclerTouchListener.ClickListener() {
             @Override
-            public void onClick(View v) {
-                setRecyclerViewLayoutManager(LayoutManagerType.LINEAR_LAYOUT_MANAGER);
+            public void onClick(View view, int position) {
+                //Movie movie = movieList.get(position);
+                School school = schoolList.get(position);
+                Toast.makeText(getActivity(), school.getName() + " is selected!", Toast.LENGTH_SHORT).show();
             }
-        });
 
-        mGridLayoutRadioButton = (RadioButton) rootView.findViewById(R.id.grid_layout_rb);
-        mGridLayoutRadioButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                setRecyclerViewLayoutManager(LayoutManagerType.GRID_LAYOUT_MANAGER);
+            public void onLongClick(View view, int position) {
+
             }
-        });
+        }));
 
-        mImageView = (ImageView) rootView.findViewById(R.id.list_image);
-
-              return rootView;
+        return rootView;
     }
 
-    /**
-     * Set RecyclerView's LayoutManager to the one given.
-     *
-     * @param layoutManagerType Type of layout manager to switch to.
-     */
-    public void setRecyclerViewLayoutManager(LayoutManagerType layoutManagerType) {
-        int scrollPosition = 0;
 
-        // If a layout manager has already been set, get current scroll position.
-        if (mRecyclerView.getLayoutManager() != null) {
-            scrollPosition = ((LinearLayoutManager) mRecyclerView.getLayoutManager())
-                    .findFirstCompletelyVisibleItemPosition();
-        }
+    private void prepareSchoolData() {
 
-        switch (layoutManagerType) {
-            case GRID_LAYOUT_MANAGER:
-                mLayoutManager = new GridLayoutManager(getActivity(), SPAN_COUNT);
-                mCurrentLayoutManagerType = LayoutManagerType.GRID_LAYOUT_MANAGER;
-                break;
-            case LINEAR_LAYOUT_MANAGER:
-                mLayoutManager = new LinearLayoutManager(getActivity());
-                mCurrentLayoutManagerType = LayoutManagerType.LINEAR_LAYOUT_MANAGER;
-                break;
-            default:
-                mLayoutManager = new LinearLayoutManager(getActivity());
-                mCurrentLayoutManagerType = LayoutManagerType.LINEAR_LAYOUT_MANAGER;
-        }
+        School school = new School("University of Toronto", "University", "1");
+        schoolList.add(school);
 
-        mRecyclerView.setLayoutManager(mLayoutManager);
-        mRecyclerView.scrollToPosition(scrollPosition);
-    }
+        school = new School("Humber College", "College", "2");
+        schoolList.add(school);
 
-    @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-        // Save currently selected layout manager.
-        savedInstanceState.putSerializable(KEY_LAYOUT_MANAGER, mCurrentLayoutManagerType);
-        super.onSaveInstanceState(savedInstanceState);
-    }
+        school = new School("Seneca", "College", "3");
+        schoolList.add(school);
 
-    /**
-     * Generates Strings for RecyclerView's adapter. This data would usually come
-     * from a local content provider or remote server.
-     */
-    private void initDataset() {
+        school = new School("University of XPTO", "University", "4");
+        schoolList.add(school);
+
+
+       // mAdapter.notifyDataSetChanged();
+
         /*
-        mDataset = new String[DATASET_COUNT];
-        for (int i = 0; i < DATASET_COUNT; i++) {
-            mDataset[i] = "This is element #" + i;
-        }
-        */
+        Movie movie = new Movie("Mad Max: Fury Road", "Action & Adventure", "2015");
+        movieList.add(movie);
 
-        mDataset = new String[10];
-        mDataset[0] = "University of Toronto";
-        mDataset[1] = "Humber College";
-        mDataset[2] = "Seneca College";
-        mDataset[3] = "Centennial College";
-        mDataset[4] = "University of Waterloo";
-        mDataset[5] = "University of XYZ";
-        mDataset[6] = "IT College";
+        movie = new Movie("Inside Out", "Animation, Kids & Family", "2015");
+        movieList.add(movie);
+
+        movie = new Movie("Star Wars: Episode VII - The Force Awakens", "Action", "2015");
+        movieList.add(movie);
+
+        movie = new Movie("Shaun the Sheep", "Animation", "2015");
+        movieList.add(movie);
+
+        movie = new Movie("The Martian", "Science Fiction & Fantasy", "2015");
+        movieList.add(movie);
+
+        movie = new Movie("Mission: Impossible Rogue Nation", "Action", "2015");
+        movieList.add(movie);
+
+        movie = new Movie("Up", "Animation", "2009");
+        movieList.add(movie);
+
+        movie = new Movie("Star Trek", "Science Fiction", "2009");
+        movieList.add(movie);
+
+        movie = new Movie("The LEGO Movie", "Animation", "2014");
+        movieList.add(movie);
+
+        movie = new Movie("Iron Man", "Action & Adventure", "2008");
+        movieList.add(movie);
+
+        movie = new Movie("Aliens", "Science Fiction", "1986");
+        movieList.add(movie);
+
+        movie = new Movie("Chicken Run", "Animation", "2000");
+        movieList.add(movie);
+
+        movie = new Movie("Back to the Future", "Science Fiction", "1985");
+        movieList.add(movie);
+
+        movie = new Movie("Raiders of the Lost Ark", "Action & Adventure", "1981");
+        movieList.add(movie);
+
+        movie = new Movie("Goldfinger", "Action & Adventure", "1965");
+        movieList.add(movie);
+
+        movie = new Movie("Guardians of the Galaxy", "Science Fiction & Fantasy", "2014");
+        movieList.add(movie);
+*/
+
     }
+
 }
